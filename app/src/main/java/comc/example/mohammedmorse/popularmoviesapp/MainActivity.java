@@ -43,6 +43,8 @@ import comc.example.mohammedmorse.popularmoviesapp.DataBase.DataBaseOperationImp
 import comc.example.mohammedmorse.popularmoviesapp.DataBase.DataBaseOperationInt;
 import comc.example.mohammedmorse.popularmoviesapp.DataBase.MovieContract;
 import comc.example.mohammedmorse.popularmoviesapp.DataBase.MovieDataBase;
+import comc.example.mohammedmorse.popularmoviesapp.Menu.Action;
+import comc.example.mohammedmorse.popularmoviesapp.Menu.WhichClicked;
 import comc.example.mohammedmorse.popularmoviesapp.Model.URLSUtils;
 import comc.example.mohammedmorse.popularmoviesapp.Model.MovieData;
 import comc.example.mohammedmorse.popularmoviesapp.Model.Review;
@@ -68,6 +70,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
      CustomAdapter adapter;
     RecyclerView.LayoutManager manager;
     ImageView imageView;
+        WhichClicked whichClicked;
+        Action action;
     RequestQueue requestQueue;
     Parcelable State;
     Observer<ArrayList<MovieData>> observer;
@@ -103,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         MyrecyclerView.setAdapter(adapter);
         State=new Bundle();
         MyrecyclerView.setLayoutManager(manager);
+        whichClicked=new WhichClicked(this,myData,adapter,IamVisitFavPage);
         SharedPreferences preferences= android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(this);
         preferences.registerOnSharedPreferenceChangeListener(this);
         networkAvailability=imp.CheckNetwork();
@@ -148,41 +153,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id=item.getItemId();
-        if(id==R.id.setting){
-            Intent intent=new Intent(this , SettingActivity.class);
-            startActivity(intent);
-        }
-        else if(id==R.id.about){
-            Toast.makeText(this, "My Name is Mohammed Morse , 20 Years Old", Toast.LENGTH_LONG).show();
-        }
-        else if(id==R.id.favourite){
-            ArrayList<MovieData> data =new ArrayList<>();
-             IamVisitFavPage=true;
-            try {
-                Cursor cursor=getContentResolver().query(ContentProviderContract.FinalUrl,null,null,null,null);
-                data=dataBaseOperationInt.OperationInCursor(cursor);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            // dialog.dismiss();
-                if(data.size()==0){
-                    imageView.setVisibility(View.VISIBLE);
-                    MyrecyclerView.setVisibility(View.INVISIBLE);
-                    Toast.makeText(this, "It`s Empty ", Toast.LENGTH_SHORT).show();
-                }
-                else {
-                     myData.clear();
-                     adapter.notifyDataSetChanged();
-                    myData.addAll(data);
-                    if(imageView.getVisibility()==View.VISIBLE) {
-                        imageView.setVisibility(View.INVISIBLE);
-                        MyrecyclerView.setVisibility(View.VISIBLE);
-                    }
-                  //  Toast.makeText(this, "The data is "+data.get(0).getName()+"Poster Image is "+data.get(0).getPosterMovie() +"Review Data "+data.get(0).getReviewData().toString(), Toast.LENGTH_SHORT).show();
-                    adapter.notifyDataSetChanged();
-                }
-
+        action=whichClicked.whichClicked(item);
+        try {
+            action.doIt();
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
         Log.e("Cycle", "onOptionsItemSelected: " );
         return super.onOptionsItemSelected(item);
